@@ -2,9 +2,9 @@
 
 ![Lab Title](assets/logo.svg)
 
-![Estimated completion time](https://img.shields.io/badge/Estimated%20Time-3%20hours-7FFF7F)
+![Estimated completion time](https://img.shields.io/badge/Estimated%20Time-4%20hours-7FFF7F)
 &nbsp;
-![Overall Difficulty](https://img.shields.io/badge/Overall%20Difficulty-⭐%20⭐-3498DB)
+![Overall Difficulty](https://img.shields.io/badge/Overall%20Difficulty-⭐%20⭐%20⭐-3498DB)
 &nbsp;
 ![Code Assessed](https://img.shields.io/badge/Code%20Assessed-yes-darkgreen)
 &nbsp;
@@ -31,57 +31,265 @@ is thus due at:
 
 ## Rationale
 
-Have you ever made a shopping list? If you have, you would know that sometimes we need to
-sum up the prices, find the most expensive item (probably to get rid of), find common items between two lists to avoid double-buying, and so on.
+With the rise of many fast-food franchises in recent times, each with its perks and quirks, it can often be difficult to decide on what's best to eat on your cheat day.
 
-Introducing: Javascript arrays - these are perfect when dealing with an ordered collection of items! In this lab, we will be bringing to life an interface that allows us to directly manipulate arrays of integers and perform common operations that you will find useful in COMP1531 and beyond.
+In this lab, we first attempt to rank fast food restaurants based on an ordered set of criteria similar to those from [Canstar Blue](https://www.canstarblue.com.au/stores-services/fast-food-restaurants/), then with **our satisfaction metric**. This will allow us to always be able to determine the best place to eat from a given set of options.
 
 ## Setup
+
 - If you are working on a CSE machine (e.g. via VLAB), ensure that you've run the command `1531 setup`. You only need to do this once at the beginning of the course.
-- Copy the SSH clone link from Gitlab and clone this repository on either VLAB or your local machine. 
-- In your terminal, change your directory (using the `cd` command) into the newly cloned lab. To check if you have done this correctly, type `ls` in this new directory to see if you can see the relevant files (including [array.js](array.js)).
+- Please make sure you have completed `lab02_arrays` prior.
+- Copy the SSH clone link from Gitlab and clone this repository on either VLAB or your local machine.
+- In your terminal, change your directory (using the `cd` command) to the newly cloned lab. To check if you have done this correctly, type `ls` in this new directory to see if you can see the relevant files (including [satisfaction.js](satisfaction.js)).
 
 ## Interface: Functions
 
-| Name & Description | Parameters | Return Type | Errors |
-|------------------|----------|--------------------|------|
-| `arraySum`<br/><br/>Compute the sum of the given integer array.<br/><br/>If the given array is empty, the sum is 0. <br/><br/><b>Difficulty</b>: ⭐ | (array) | `number` | N/A |
-| `arrayProduct`<br/><br/>Compute the product of the given integer array.<br/><br/>If the given array is empty, the product is 1. <br/><br/><b>Difficulty</b>: ⭐ | (array) | `number` | N/A |
-| `arrayMin`<br/><br/>Find the smallest number in the array. <br/><br/><b>Difficulty</b>: ⭐ | (array) | `number` | Return `null` If the given array is empty |
-| `arrayMax`<br/><br/>Find the largest number in the array. <br/><br/><b>Difficulty</b>: ⭐ | (array) | `number` | Return `null` If the given array is empty |
-| `arrayContains`<br/><br/>Determine if the array contains a particular integer element. <br/><br/><b>Difficulty</b>: ⭐ | (array, item) | `boolean` | N/A |
-| `arrayReversed`<br/><br/>Create an array that is the reversed of the original. The original array should not be modified. <br/><br/><b>Difficulty</b>: ⭐ | (array) | `number[]`, or `Array<number>` | N/A |
-| `arrayHead`<br/><br/>Returns the first element in the array. <br/><br/><b>Difficulty</b>: ⭐ | (array) | `number` | Return `null` If the given array is empty |
-| `arrayTail`<br/><br/>Returns all remaining elements in the array after the head. If the input array contains one element, an empty array is returned.<br/><br/><b>Difficulty</b>: ⭐ | (array) | `number[]`, or `Array<number>` | Return `null` If the given array is empty |
-| `arraysMultiply`<br/><br/>Given two arrays, multiply the elements at each index from arrays and store the result in a third array.<br/><br/>If the given two arrays differ in length, excess elements of the larger array will be added on at the end. <br/><br/><b>Difficulty</b>: ⭐⭐ | (array1, array2) | `number[]`, or `Array<number>` | N/A |
-| `arraysCommon`<br/><br/>Create a third array containing common elements between two arrays.<br/><br/>Each element in the first array can map to at most one element in the second array, and vice versa (one-to-one relationship).<br/><br/>Duplicated elements in each array are treated as separate entities.<br/><br/>The order is determined by the first array. <br/><br/><b>Difficulty</b>: ⭐⭐⭐ | (array1, array2) | `number[]`, or `Array<number>` | N/A |
+<table>
+  <tr>
+    <th>Name & Description</th>
+    <th>Parameters</th>
+    <th>Return Type</th>
+    <th>Errors</th>
+  </tr>
+  <tr>
+    <td>
+        <code>sortedFastFood</code><br /><br />
+        Given an array of fast food restaurants, return a new sorted array in <b>descending order</b> by:<br/><br/>
+        <ol>
+            <li>customerService</li>
+            <li>foodVariety</li>
+            <li>valueForMoney</li>
+            <li>timeToMake</li>
+            <li>taste</li>
+            <li>name (in <b>ascending lexicographical order</b>, case-insensitive)</li>
+        </ol>
+        For example, if two restaurants have the same customerService and foodVariety, the one with a higher valueForMoney will be in front (nearer to the start of the returned array).
+        <br/><br/>
+        If all other fields are equal and the name is compared, "hungry Jacks" will be before "KFC" because "h" is before "K".
+        <br/><br/>
+        You should NOT modify the order of the original array.
+        <br/><br/>
+        <b>Difficulty</b>: ⭐⭐⭐
+    </td>
+    <td>
+        (fastFoodArray)
+    </td>
+    <td>
+        <code>fastFoodArray</code>
+    </td>
+    <td>
+        N/A
+    </td>
+  </tr>
+  <tr>
+    <td>
+        <code>sortedSatisfaction</code><br /><br />
+        Given an array of fast food restaurants, return a new sorted
+        array ranked by the overall satisfaction (highest first).
+        <br/><br/>
+        See below for a mathematical representation of the satisfaction formula.
+        <br/><br/>
+        If two restaurants have the same satisfaction, the names
+        are compared in ascending lexicographical order (case-insensitive).
+        For example, "hungry Jacks" will appear before "KFC" because
+        "h" is before "K".
+        <br/><br/>
+        You should NOT modify the order of the original array.
+        <br/><br/>
+        <b>Difficulty</b>: ⭐⭐⭐
+    </td>
+    <td>
+        (fastFoodArray)
+    </td>
+    <td>
+        <code>satisfactionArray</code>
+    </td>
+    <td>
+        N/A
+    </td>
+</table>
 
-### Tip
+### Satisfaction Formula
 
-- For some of the functions above, further examples are provided in their documentation in [arrays.js](array.js).
-- **The original array passed in for each function should not be modified**. We have emphasised this in a few functions that are likely to cause issues, marked with `WARNING`.
+The satisfaction of a restaurant is the average score between `customerService`, `foodVariety`, `valueForMoney`, `timeToMake` and `taste`. This can be represented mathematically as:
+
+```math
+\text{satisfaction} =
+\frac{
+    \text{customerService}
+    + \text{foodVariety}
+    + \text{valueForMoney}
+    + \text{timeToMake}
+    + \text{taste}
+}
+{5}
+```
+
+You do not need to round the satisfaction value.
 
 ## Interface: Data Types
-| If the variable name | It is of type |
-| --- | --- |
-| contains **array** | `number[]`, which is the same as `Array<number>` and denotes an array of numbers such as `[1,2,3]`  |
-| is exactly **item** | `number`, specifically integer |
+
+| If the variable name             | It is of type                                                                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| is exactly **fastFoodArray**     | `Array` of objects, where each `object` contains the keys `{name, customerService, foodVariety, valueForMoney, timeToMake, taste}` |
+| is exactly **name**              | `string`                                                                                                                           |
+| is exactly **customerService**   | `number`                                                                                                                           |
+| is exactly **foodVariety**       | `number`                                                                                                                           |
+| is exactly **valueForMoney**     | `number`                                                                                                                           |
+| is exactly **timeToMake**        | `number`                                                                                                                           |
+| is exactly **taste**             | `number`                                                                                                                           |
+| is exactly **restaurantName**    | `string`                                                                                                                           |
+| is exactly **satisfactionArray** | `Array` of objects, where each `object` contains the keys `{restaurantName, satisfaction}`                                         |
+| is exactly **satisfaction**      | `number`                                                                                                                           |
+
+## Example Array Structure
+
+Below is an example of a `fastFoodArray` that you will receive in your functions.
+
+```js
+const fastFoodArray = [
+  {
+    name: "mcdonalds",
+    customerService: 3,
+    foodVariety: 3,
+    valueForMoney: 3,
+    timeToMake: 4,
+    taste: 3,
+  },
+  {
+    name: "kfc",
+    customerService: 4,
+    foodVariety: 3,
+    valueForMoney: 4,
+    timeToMake: 4,
+    taste: 3,
+  },
+];
+```
+
+Once you have implemented all functions, the output of the starter debugging `console.log` (assuming you have not modified the input array) is:
+
+<details close>
+<summary>click to view sample output</summary>
+
+```
+$ node satisfaction.js
+========================
+1. Testing Fast Food
+===========
+[
+  {
+    name: 'First fastFood, second satisfaction (4.6)',
+    customerService: 5,
+    foodVariety: 5,
+    valueForMoney: 5,
+    timeToMake: 4,
+    taste: 4
+  },
+  {
+    name: 'Second fastFood, third satisfaction (4.6)',
+    customerService: 5,
+    foodVariety: 5,
+    valueForMoney: 5,
+    timeToMake: 4,
+    taste: 4
+  },
+  {
+    name: 'Third fastFood, first satisfaction (4.8)',
+    customerService: 5,
+    foodVariety: 4,
+    valueForMoney: 5,
+    timeToMake: 5,
+    taste: 5
+  }
+]
+
+========================
+2. Testing Satisfaction
+===========
+[
+  {
+    restaurantName: 'Third fastFood, first satisfaction (4.8)',
+    satisfaction: 4.8
+  },
+  {
+    restaurantName: 'First fastFood, second satisfaction (4.6)',
+    satisfaction: 4.6
+  },
+  {
+    restaurantName: 'Second fastFood, third satisfaction (4.6)',
+    satisfaction: 4.6
+  }
+]
+```
+
+Note that having the same output does not guarantee that your function will behave correctly in all cases (e.g. empty array, one element, many elements, etc).
+
+While manually testing, you are welcome to make up your data or use those provided by
+[Canstar Blue](https://www.canstarblue.com.au/stores-services/fast-food-restaurants/).
+Note that the [Satisfaction Formula](#satisfaction-formula) that we use may be different.
+
+</details>
 
 # Task
 
 ## Implementation
 
-Open the file [array.js](./array.js) in your preferred text editor. The stub code for each function has been provided for you.
+Open the file [satisfaction.js](satisfaction.js) in your preferred text editor. The stub code for each function has been provided for you.
 
 Complete each function in [Interface: Functions](#interface-functions).
 
-## Run & Debug
+For sorting lexicographically, you should use the [`.localeCompare`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare) method for strings! For example,
+```javascript
+const s1 = 'my apple';
+const s2 = 'my banana';
 
-You can run and debug your code by typing the following in a terminal opened in the directory (folder) for this lab:
+// prints -1, i.e. < 0 (less than 0)
+// This is because 'a' is before 'b'
+console.log(s1.localeCompare(s2));
+```
+
+
+### Tips & Hints
+
+- You may want to introduce a helper function that compares two restaurants and return a positive, zero, or negative number depending on whether the first or second restaurant is considered "better".
+
+- You may find the `.sort()` method of arrays useful, although this lab can be completed without it. **An example of an approach that does NOT use .sort() is in the file [sample.js](sample.js)**.
+
+- Be careful with `"name"` vs `"restaurantName"` - read the specification carefully!
+
+- One common mistake in this lab is returning an array wrapped within another array or object, e.g.
+
+    ```js
+    const array = [1, 2, 3];
+
+    // 1. ❌ wrong, array within array
+    return [array];
+
+    // 2. ❌ wrong, array within object
+    return { array }; 
+    
+    // 3. ✅ correct
+    return array;
+    ```
+    please be wary of this, as **you will not be given a second chance for a rerun for this case**.
+
+## Assumptions
+
+1. All restaurant names will be case-insensitively unique.
+   - For example, if there is a restaurant `"KFC"`, there will not be another restaurant named `"kfc"`, `"kFc"` or `"KFc"`.
+1. You do not need to round the value of satisfaction.
+1. All objects in the fastFoodArray will follow the same structure from [Interface: Data Types](#interface-data-types).
+
+## Run & Test
+
+You can run and test your code by typing the following in a terminal opened at the directory (folder) for this lab:
 
 ```shell
-$ node array.js
+$ node satisfaction.js
 ```
+
+This executes the code in [satisfaction.js](satisfaction.js). Refer back to the [Expected Array Structure](#example-array-structure) for the expected output.
 
 ## Output format of console.log
 
@@ -103,10 +311,7 @@ Using `console.log` is strictly for debugging purposes. It will not affect your 
 **If you have pushed your latest changes to master on Gitlab no further action is required! At the due date and time, we automatically collect your work from what's on your master branch on Gitlab.**
 
 # Notes
-- Pay close attention to any `WARNING` or when a function can have multiple return types, e.g. `{number|null}`.
+
 - Passing the given tests is a good indication of correctness but does not guarantee that you will receive the full mark for the lab.
 - You are advised to do further testing.
-- You may find the resource below useful:
-    - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
-- You are not allowed to use any external libraries/modules in this exercise. This means your code should run without needing to use the command `npm install`.
-- For this lab, and all future labs, you are allowed to use any features of NodeJS that runs on a CSE machine, unless explicitly stated otherwise in the specification. For example, `Math.min`, `Math.max`, `Array.find` and so on are all built-in features of NodeJS that can be used.
+- You are not allowed to use any external libraries/modules in this exercise. This simply means you cannot use the command `npm install`.
