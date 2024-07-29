@@ -1,260 +1,461 @@
-<div align="center">
-
-![Lab Title](assets/logo.svg)
-
-![Estimated completion time](https://img.shields.io/badge/Estimated%20Time-2%20hours-7FFF7F)
-&nbsp;
-![Overall Difficulty](https://img.shields.io/badge/Overall%20Difficulty-⭐%20⭐-3498DB)
-&nbsp;
-![Code Assessed](https://img.shields.io/badge/Code%20Assessed-yes-darkgreen)
-&nbsp;
-![Eslint Assessed](https://img.shields.io/badge/Style%20Assessed-no-FFC0CB)
-&nbsp;
-![Test Quality Assessed](https://img.shields.io/badge/Test%20Quality%20Assessed-no-FEDC56)
-&nbsp;
-
----
-
-</div>
+# Lab09 Deploy
 
 [TOC]
 
-## Due Date
+# Due Date
 
-Week 4 Monday 6:00 pm [Sydney Local Time](https://www.timeanddate.com/worldclock/australia/sydney)
+Week 10 Monday 6:00 pm [Sydney Local Time](https://www.timeanddate.com/worldclock/australia/sydney).
 
-## Background
+# Note
 
-### Rationale
+1. We'll be using a very basic express server to demonstrate deployment! It has a basic implementation of the following routes:
+    - root (`/`),
+    - echo (`/echo/echo`),
+    - add name (`/add/name`),
+    - view names (`/view/names`), and
+    - clear (`/clear`)
 
-Everybody loves holidays, and your client is no exception!
+2. Although it is not a requirement that you deploy to Vercel in this lab, we recommend doing so as you will receive the most support from our staff this way.
 
-You have been approached with a problem - your client wishes to know which day of the week Christmas, Easter and Valentine's day would fall on in a particular year, regardless of whether it is in the past, present or future.
+3. There are several steps, please patiently go through each of them. **Please read the lab instructions regarding the [submission process](#testing-and-submitting-your-deployed_url) carefully** when you've finished.
 
-Being a clever and efficient software engineer, you knew that writing a date-time library yourself could only bring forth pain and suffering. Fortunately, the wheels do not need to be re-invented for you have recently acquired infinite wisdom through the [Node Package Manager (npm)](https://docs.npmjs.com/about-npm).
+4. Click [here](https://youtu.be/YBMWfwXAfSo) for a demo of this lab!
 
-### Getting Started
+# Background
 
-- If you are working on a CSE machine (e.g. via VLAB), ensure that you've run the command `1531 setup`. You only need to do this once at the beginning of the course.
-- Please make sure you have completed `lab03_password` prior.
-- Copy the SSH clone link from Gitlab and clone this repository on either VLAB or your local machine.
-- In your terminal, change your directory (using the `cd` command) into the newly cloned lab. To check if you have done this correctly, type `ls` in this new directory to see if you can see the relevant files (including [holidays.js](holidays.js)).
+## Rationale
 
-### Package Installation
+Deploy deploy deploy 🚀! While having our forum application working locally is fun and all, there's no point if you can't show it off to everyone else 😎!
 
-1. Open [package.json](package.json) and look under the key `"devDependencies"`. We have added these development packages from `lab03_password` for you.
+In this lab, you will expose your backend server application to the outside world via serverless functions and using databases. You can use it to chat with your friends, host secret parties or plot a coup d'etat against COMP1531 staff - the possibilities are endless!
 
-1. Quickly install the packages with the command:
+## Context
 
-   ```shell
-   $ npm install # shortcut: npm i
-   ```
+<details>
 
-1. Under `"scripts"`, make the following changes:
-   ```json
-   "scripts": {
-       "test": "jest",
-   }
-   ```
+<summary> A quick visual guide on how deployment will change things for us.</summary>
 
-For this exercise, we will be using the following libraries:
-
-- [date-fns](https://www.npmjs.com/package/date-fns) for parsing dates
-- [date-fns-holiday-us](https://www.npmjs.com/package/date-fns-holiday-us) for useful holiday functions
-- [prompt-sync](https://www.npmjs.com/package/prompt-sync) for reading user input from the command line
-
-1. You can install all three packages in one command with:
-
-   ```shell
-   $ npm i date-fns date-fns-holiday-us@0.2.1 prompt-sync
-   ```
-
-   Note that for date-fns-holiday-us, we are installing the specific version 0.2.1.
-
-1. Open [package.json](package.json) and ensure that these packages appear under the key `"dependencies"`, e.g
-   ```json
-   // Note: Your version number may differ
-   "dependencies": {
-     "date-fns": "^2.28.0",
-     "date-fns-holiday-us": "^0.2.1",
-     "prompt-sync": "^4.2.0"
-   }
-   ```
-1. Use git status, add, commit and push your [package.json](package.json) and [package-lock.json](package-lock.json).
-
-### Interface: Functions
-
-#### Note:
-The return type `holidaysArray` is an array itself (`[...]`), rather than an object with this key (i.e. not`{ holidaysArray }`).
-
-<table>
-  <tr>
-    <th>Name & Description</th>
-    <th>Parameters</th>
-    <th>Return Type</th>
-    <th>Errors</th>
-  </tr>
-  <tr>
-    <td>
-        <code>holidaysInRange</code><br /><br />
-        Given a starting year and an ending year:
-        <ul>
-            <li>If <code>start</code> is not at least 325, return an empty array.</li>
-            <li>If <code>start</code> is strictly greater than <code>end</code>, return an empty array.</li>
-            <li>Otherwise, return an array of objects containing information about the Valentine,
-          Easter and Christmas date strings in the given (inclusive) range.</li>
-        </ul>
-        <b>Difficulty</b>: ⭐⭐⭐
-    </td>
-    <td>
-        (start, end)
-    </td>
-    <td>
-        <code>holidaysArray</code>
-    </td>
-    <td>
-        N/A
-    </td>
-  </tr>
-  <tr>
-    <td>
-        <code>main</code><br /><br />
-        Reads a starting year and an ending year from the user and displays (with <code>console.log</code>) the
-        values returned by the <code>holidaysInRange</code> function above.
-        <br/><br/>
-        Note:
-        <ul>
-            <li>
-                See further below for some expected behaviour of the main function.
-            </li>
-        </ul>
-        <b>Difficulty</b>: ⭐
-    </td>
-    <td>
-        (start, end)
-    </td>
-    <td>
-        <code>undefined</code>
-    </td>
-    <td>
-        N/A
-    </td>
-</table>
-
-### Interface: Data Types
-
-| Variable Name | Type                                                                                          |
-| ------------- | --------------------------------------------------------------------------------------------- |
-| start         | `number`, specifically integer                                                                |
-| end           | `number`, specifically integer                                                                |
-| valentinesDay | `string`, e.g. "Sunday, 14.02.1971"                                                           |
-| easter        | `string`, e.g. "Sunday, 11.04.1971"                                                           |
-| christmas     | `string`, e.g. "Saturday, 25.12.1971"                                                         |
-| holidaysArray | `Array` of objects, where each object contains the keys `{valentinesDay, easter, christmas}` |
-| undefined | This means you do not need to return anything! |
-
-The month and day should be 0-padded to 2 digits, and the year should be 0-padded to have a minimum of 4 digits (yyyy). For example, if the following years are within the range, the expected year format is:
-
-- 325 => 0325
-- 2000 => 2000
-- 20000 => 20000
-
-## Task
-
-### Writing Tests (optional)
-
-For this lab, testing has been made optional (not assessed). However, you are still advised to write them to gain confidence that your code behaves as expected.
-
-In [holidays.test.js](holidays.js), complete a test suite for `holidaysInRange`. You should aim to cover _different_ cases for the function.
-
-You do not need to write tests for the `main` function (beyond the scope of this course).
-
-You may find the following resource useful:
-
-- https://www.calendar-365.com/holidays/1970.html
-- Try changing `1970` to a different year in the link above
-- Note: The site does not support years before 1000 - however, similar to your implementation, our automarking will rely solely on the [date-fns-holiday-us](https://www.npmjs.com/package/date-fns-holiday-us) package so these cases are not a cause for concern.
-
-### Implementation
-
-In [holidays.js](holidays.js), implement the function `holidaysInRange` according to its documentation.
-
-This exercise is difficult to complete without using the libraries provided. You may want to spend some time reading the documentation for
-[date-fns](https://www.npmjs.com/package/date-fns) and [date-fns-holiday-us](https://www.npmjs.com/package/date-fns-holiday-us) before starting.
-
-Ensure that your code passes all of the written tests before submitting it.
-
-### Main - Reading Inputs from Commandline
-
-In the `main` function, use [prompt-sync](https://www.npmjs.com/package/prompt-sync) to read the `start` and `end` year from the user and print the output of `holidaysInRange` to `stdout`. This function is imported and called in [main.js](main.js).
-
-Note that [prompt-sync](https://www.npmjs.com/package/prompt-sync) reads inputs as strings, so you will need to use convert them to integers using `parseInt()`!
-
-Below is an example of how [prompt-sync](https://www.npmjs.com/package/prompt-sync) can be used to read a string and print it out to stdout:
-
-<details close>
-<summary>click to view</summary>
-
-```js
-import promptSync from "prompt-sync";
-
-function main() {
-  const prompt = promptSync();
-  const string = prompt("Enter a message: "); // has type "string"
-  console.log(string);
-}
-
-// Note: This is already done for you in main.js.
-// You should NOT call the main function inside holidays.js, otherwise your tests
-// will not run to completion when importing from holidays.js
-main();
-```
+![4.1](assets/4.1.background-info-diagram.png)
 
 </details>
 
-Here are a few examples (it is fine if your output differs by white space):
+Normally, we have to run our API (`server.ts`) and its associated functions on one terminal, while having another terminal open to run our tests. Vercel however, can handle the former for us! All we need to do after that is to configure our HTTP requests to go to our deployed URL, instead of our localhost URL.
 
+## Getting Started
+
+- Copy the SSH clone link from Gitlab and clone this repository on either VLAB or your local machine.
+- In your terminal, change your directory (using the cd command) into the newly cloned lab.
+
+## Package Installation
+
+1. Open [package.json](package.json) and look at existing packages in "dependencies" and "devDependencies". Install them with:
+    ```shell
+    $ npm install
+    ```
+
+1. That's it :). You'll notice we have a very basic express server. Feel free to skim through the codebase and run `npm start` on one terminal and `npm t` on another to ensure everything is passing as expected.
+
+# Task
+
+An image guide is available for some of the instructions below. You can toggle their visibility by clicking on the respective text - for example:
+
+<details close>
+<summary>Click this line of text to toggle image visibility</summary>
+
+![0.0](assets/0.0.vercel-welcome.png)
+
+</details>
+
+Make sure to also read the tips given by Vercel as you progress through the lab. **Don't just blindly follow the instructions given**, as there will be inputs that you will need to modify accordingly for your needs.
+
+## 0. Create Accounts
+1. **A private github account:** Vercel requires you to link your backend repository to deploy it. If you do not currently have an account, you should create one by following the link: https://github.com/signup
+
+2. **A Vercel account:** Vercel offers us a serverless method to deploy our backend repository. The setup is completely free and does not require any payment methods for sign-up. Create an account and select **Continue with GitHub** so that your accounts can be linked: https://vercel.com/signup.
+
+Why do all of this?
+<details close>
+<summary>Visual explanation of what we're trying to do</summary>
+We're attempting to link our code to Vercel. To do this, we will be using a Github account as an intermediary.
+
+![0.0](assets/0.1.github.explained.png)
+
+</details>
+
+
+
+## 1. Duplicate your repository to GitHub
+
+1. In a separate window, log in to your GitHub account and select **New repository**.
+    <details close>
+    <summary>Top Left > Dropdown > New Repository</summary>
+
+    ![image](assets/1.1.new-github-repo.png)
+
+    </details>
+
+2. Name your repository, e.g. "`Lab09-Deploy`", and make sure to select **Private**. Then hit **Create Repository**.
+    <details close>
+    <summary>Create Repository Form - example details</summary>
+
+    ![image](assets/1.2.new-repo-form.png)
+
+    </details>
+3. Just in case you missed it, please ensure the Github repo is **private**.
+4. You should be automatically navigated to your created repository. Back on your terminal, use the following code to update your GitHub repository.
 ```shell
-$ node main.js
-Enter start: 1970                # NOTE: user enters 1970
-Enter end: 1972                  # NOTE: user enters 1972
-[
-  {
-    valentinesDay: 'Saturday, 14.02.1970',
-    easter: 'Sunday, 29.03.1970',
-    christmas: 'Friday, 25.12.1970'
-  },
-  {
-    valentinesDay: 'Sunday, 14.02.1971',
-    easter: 'Sunday, 11.04.1971',
-    christmas: 'Saturday, 25.12.1971'
-  },
-  {
-    valentinesDay: 'Monday, 14.02.1972',
-    easter: 'Sunday, 02.04.1972',
-    christmas: 'Monday, 25.12.1972'
-  }
-]
+# Replace <SSH_URL> with your Github repository's SSH URL.
+# The SSH URL can be found in the empty Github repo you just created.
+# E.g. git@github.com:USERNAME/Lab09-Deploy.git
+$ git remote add deploy <SSH_URL>
+$ git push deploy
 ```
+After running the command, your GitHub repository should then be populated with the code from your backend.
 
-`Start` is less than 325:
+**NOTE**: **Whenever you want to update your Github repository (hence Vercel as well)**, run `git push deploy` after changes have been added and committed. If you only run `git push` this will send your changes to Gitlab, not Github.
 
-```shell
-$ node main.js
-Enter start: 324
-Enter end: 325
-[]
+Getting a "`git@github.com: Permission denied (publickey)` or similar access rights error? You'll need to add your SSH-Key to Github! Just like we did for Gitlab in [`lab01_git`](https://cgi.cse.unsw.edu.au/~cs1531/redirect/?path=COMP1531/23T3/students/_/lab01_git#adding-your-ed25519-ssh-key-to-gitlab). See instructions below, and then attempt to push again.
+- Generate a new SSH Key (optional): https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+- Add SSH key to Github: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
+
+
+
+## 2. Deploy Server using Vercel
+*[Vercel](https://en.wikipedia.org/wiki/Vercel) is a cloud platform as a service company. Vercel architecture is built around [composability](https://en.wikipedia.org/wiki/Composability).*
+
+1. In your repo, install the [vercel](https://www.npmjs.com/package/vercel) package
+    ```shell
+    $ npm install vercel
+    ```
+
+2. **In the root directory**, create a file called `vercel.json` and copy the following content into the file. This essentially configures our Vercel deployment to redirect all routes to the `server.ts` file.
+    ```json
+    {
+      "version": 2,
+      "builds": [
+          {
+              "src": "src/server.ts",
+              "use": "@vercel/node"
+          }
+      ],
+      "routes": [
+          {
+            "src": "/(.*)",
+            "dest": "src/server.ts"
+          }
+      ]
+    }
+    ```
+
+3. Add and commit all changes and push them up to the repository:
+    ```shell
+    $ git push deploy
+    ```
+    If you forget to add, commit and push deploy, you may get `404 not_found` errors later on.
+4. On the Vercel homepage, log into Vercel and then select the `Add New...` button and `Project` selection.
+    <details close>
+    <summary>Top Left > Add New > Dropdown > Project </summary>
+
+    ![image](assets/2.2.add-new-vercel-project.png)
+
+    </details>
+
+5. Select `Import` on the repository that you created in GitHub.
+    <details close>
+    <summary>Select Github Provider </summary>
+
+    ![image](assets/2.3.connect-vercel-with-github.png)
+
+    </details>
+    <details close>
+    <summary>Import Git Repository > Import </summary>
+
+    ![image](assets/2.4.import-github.png)
+
+    </details>
+
+    Can't see your github repo? Follow the `Adjust GitHub App Permissions →` link and instructions.
+
+6. Select `Deploy` to deploy your repository and wait shortly for your repository to be built.
+    <details close>
+    <summary> Configure Project > Deploy </summary>
+
+    ![image](assets/2.5.deploy-forum.png)
+
+    </details>
+
+    If successful, you should see a "Congratulations" and on your `Dashboard` see your deployment with a green "Ready" Status.
+    <details close>
+    <summary> Successful Deployment View </summary>
+
+    ![image](assets/2.6.successful-deployment-dashboard.png)
+
+    </details>
+
+    **If there's an error, you can [click on this video](https://youtu.be/fMovx1dWy2I)** which can guide you through the process of how to fix it.
+    Otherwise, you can follow these instructions. First, click on `Inspect Deployment` at the bottom of the page.  You should end up on the `Deployment Details` page.
+    If the build log mentions `npm ERR! code 1` go back to your project and click on the `Settings` tab. Then scroll down and change the Node version to 18. Afterwards, go back to the `Deployments` tab and click on the ellipsis button of your latest deployment. Then click `Redeploy`.
+
+7. Make your deployed url contain your zID. Go to `Project Settings` > `Domains` > `Edit`, and modify your domain name to include your zID, e.g. `z1234444-forum-deploy.vercel.app`.
+    <details close>
+    <summary> Homepage > Project Menu > Settings </summary>
+
+    ![image](assets/2.7.project-settings.png)
+
+    </details>
+    <details close>
+    <summary> Project Settings > Domain > Edit </summary>
+
+    ![image](assets/2.8.edit-domain-name.png)
+
+    </details>
+
+8. Congratulations! You've now deployed your server onto the web...somewhat. If you (or a friend) visits the root (`/`) or echo (`/echo/echo?message=hello`) routes on your deployed url, your deployed server should respond with the resulting response from your backend - awesome!
+
+    However, as soon as you try to access other routes that manipulate your data store, you'll start running into server errors.
+
+    <details close>
+    <summary> Failed DELETE '/clear' request using API Client  </summary>
+
+    ![image](assets/2.9.persistance-deployment-error.png)
+
+    </details>
+
+    Why is this the case? Well, Vercel is a [serverless](https://vercel.com/docs/functions/serverless-functions) deployment option that will only respond when a request is made. Any state variables, including local files e.g. `database.json`, will not be preserved. This means that if we'd implemented persistence - we'd lose it! What's a more robust solution? Instead of reading and writing to a file in our folder, let's read and write our data from an online database.
+
+## 3. Setup Deployed Database
+For the project we've been persisting data by writing to a json file, e.g. `database.json`. This however will not work anymore as we can't write to files on Vercel! What we will do instead is **store everything as a key-value pair** in Vercel's online database. So in the case of lab09 it might look like:
+```typescript
+{ "names": ["Giuliana", "Yuchao"] }
 ```
+To set this up, follow these steps:
+1. On your deployment page, navigate to the `Storage` tab.
+    <details close>
+    <summary>Top Bar > Storage </summary>
 
-## Tips
+    ![image](assets/3.1.storage-tab.png)
 
-1. Avoid manually parsing the date string format yourself - use the provided libraries!
-1. You may not use any libraries other than the ones listed unless mentioned otherwise by our course staff.
+    </details>
 
-## Submission
+2. Select `Create New Database` and select the `KV` option. You can use any database name, e.g. `Forum Database`, but make sure the `Primary Region` is `Washington, D.C., USA iad1`. **DO NOT SELECT PRIMARY REGION AS SYDNEY** as this will lead to longer round trip times for network requests between your deployment and your database.
+    <details close>
+    <summary>Create KV Database Form - example details </summary>
 
-- Use `git` to `add`, `commit`, and `push` your changes on your master branch.
+    ![image](assets/3.3.database-form.png)
+
+    </details>
+
+3. Afterwards select `Create` and navigate to the database.
+4. Navigate to the "`.env.local`" tab. Select show secret and copy the `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+    <details close>
+    <summary> All Databases >  KV Database > .env.local </summary>
+
+    ![image](assets/3.4.env.local.tab.png)
+
+    </details>
+
+5. Back on your terminal, install [@vercel/kv](https://www.npmjs.com/package/@vercel/kv)
+    ```shell
+    $ npm install @vercel/kv
+    ```
+6. Copy and declare the `KV_REST_API_URL` and `KV_REST_API_TOKEN` as const variables inside the `server.ts` file. You can see them by clicking on the `Show Secret` button. Copy the following code snippet into [src/server.ts](src/server.ts) to open a client so that we can request to read or write to our database.
+    ```typescript
+    import { createClient } from '@vercel/kv';
+
+    // Replace this with your KV_REST_API_URL
+    // E.g. https://large-poodle-44208.kv.vercel-storage.com
+    const KV_REST_API_URL="https://YOUR-URL";
+    // Replace this with your KV_REST_API_TOKEN
+    // E.g. AaywASQgOWE4MTVkN2UtODZh...
+    const KV_REST_API_TOKEN="YOUR-API_TOKEN";
+
+    const database = createClient({
+      url: KV_REST_API_URL,
+      token: KV_REST_API_TOKEN,
+    });
+    ```
+    Make sure to copy the right token, otherwise, you may get an error later on such as `NOPERM this user has no permissions to run the 'hset' command`.
+
+## 4. Use Deployed Database
+1. Create two new routes inside [src/server.ts](src/server.ts) to get and update your deployed database respectfully. These routes will serve as way to grab and update our online repository. An example code snippet can be found below:
+    ```typescript
+    app.get('/data', async (req: Request, res: Response) => {
+      const data = await database.hgetall("data:names");
+      res.status(200).json(data);
+    });
+
+    app.put('/data', async (req: Request, res: Response) => {
+      const { data } = req.body;
+      await database.hset("data:names", { data });
+      return res.status(200).json({});
+    });
+    ```
+    And with that, we can now set and grab our data from an online database using Vercel KV.
+
+    Don't forget to `git add`, `git commit`, and then `git push deploy`, to re-deploy your application on Vercel. If you miss this step your changes made won't be applied.
+
+    Try testing this route by sending a PUT request via an API client.
+    <details close>
+    <summary> API Client PUT Request </summary>
+
+    ![image](assets/3.5.successful-data-change.png)
+
+    </details>
+
+    And likewise, if you send a GET request you should be able to retrieve the data you just set.
+
+    From here, when you need to `setData()` or `getData()` you should send a request to the server route with the data information you want.
+
+    In order to understand what is happening, recall that everything is being stored as a key-value pair in our online database, for example: 
+    ```typescript
+    { "names": ["Giuliana", "Yuchao"] }
+    ```
+    `database.hgetall` will return the value of the key `names`. Similar to a getData operation. While `database.hset` sets the value for that key. Similar to a setData operation. 
+
+2. Modify the way we currently read and write data in [src/names.ts](src/names.ts) to use the routes we just created.
+
+    An example implementation can be found below:
+
+    ```typescript
+    import request, { HttpVerb } from 'sync-request';
+    // Ensure that your DEPLOYED_URL has been updated correctly
+    import { DEPLOYED_URL } from './submission';
+    ```
+
+    ```typescript
+    const requestHelper = (method: HttpVerb, path: string, payload: object) => {
+      let json = {};
+      let qs = {};
+      if (['POST', 'DELETE'].includes(method)) {
+        qs = payload;
+      } else {
+        json = payload;
+      }
+
+      const res = request(method, DEPLOYED_URL + path, { qs, json, timeout: 20000 });
+      return JSON.parse(res.body.toString());
+    };
+
+    const getData = (): Data => {
+      try {
+        const res = requestHelper('GET', '/data', {});
+        return res.data;
+      } catch (e) {
+        return {
+          names: []
+        };
+      }
+    };
+
+    export const setData = (newData: Data) => {
+      requestHelper('PUT', '/data', { data: newData });
+    };
+    ```
+
+    This is just one example, as students may have different keys or methods to save persistent data.
+
+3. **Note**: For the deployed server you **MUST use the `sync-request`** and **NOT `sync-request-curl`**. Currently, the default Node environment Vercel uses to build projects does not include binaries which `sync-request-curl` relies on.
+
+    Make sure to install [sync-request](https://www.npmjs.com/package/sync-request),
+    ```shell
+    $ npm install sync-request
+    ```
+
+    and then utilise `sync-request` instead of `sync-request-curl` across your server and function implementation.
+    ```typescript
+    // Replace sync-request-curl for sync-request in your server
+    // import request, { HttpVerb } from 'sync-request-curl';
+    import request, { HttpVerb } from 'sync-request';
+    ```
+
+## Testing and Submitting your DEPLOYED_URL
+
+1. Open [src/submission.ts](src/submission.ts) and modify the `DEPLOYED_URL` to your newly deployed site, e.g. https://z1234444-anything-you-want.vercel.app.
+
+    **A reminder that the `DEPLOYED_URL` must contain your zID exactly once.** You may need to go to Settings > Domains > and edit your deployed url to include your zID.
+
+2. Again, don't forget to `git add`, `git commit`, and then `git push deploy`, to re-deploy your application on Vercel. If you miss this step your changes made won't be applied.
+
+4. Ensure all tests pass by running `npm t`, it should take around 20 seconds (NOTE: don't forget to remove the `test.todo` and uncomment the actual test suite!). If there are issues, head to the debugging section below.
+
+## Common Issues
+
+  <details close>
+  <summary> 1. Vercel is not deploying the code you expect </summary>
+
+  - Remember to `git add`, `git commit` and `git push deploy`. This will ensure that Github and hence Vercel receive your updated code. 
+  - After you've pushed your code to GitHub, ensure the commit hash on GitHub matches the one on Vercel. 
+  ![image](assets/5.6.push.code.home.png)
+  ![image](assets/5.7.push.code.github.png)
+  ![image](assets/5.8.push.code.deployment.tab.png)
+
+  - You can also check if Vercel has the correct files, by clicking on Your project > Source. Ensure that each file is as expected. Check for example if the `DEPLOYED_URL` was updated.
+  ![image](assets/5.4.debug-source.png)
+  </details>
+
+  <details close>
+  <summary> 2. Incorrect format for deployed URL </summary>
+
+  - Ensure the URL begins with `http` or `https`. Also check that it **doesn't** end with `/`. 
+  </details>
+
+  <details close>
+  <summary> 3. You've changed branches at some point </summary>
+
+  - Go to Settings > Git. Scroll down to Production Branch and change the name of the branch. 
+  - Additionally if you go to the Deployments tab, you may see that it says Preview, like in the image below. For the latest deployment, click on the ellipse icon (three horizontal dots) on the very right and click 'Promote to production'. 
+  ![image](assets/5.9.deploy.preview.png)
+  </details>
+
+  <details close>
+  <summary> 4. You're getting a 404 error </summary>
+
+  - You have very likely forgotten to push `vercel.json`! Follow the steps in section 1 of Common Issues. 
+  </details>
+
+
+
+## Debugging tips
+  <details close>
+  <summary> 1. Use an API client </summary>
+
+  - API clients such as Postman are extremely helpful for this lab.
+
+  - Send requests to `GET/PUT` methods for `/data` to see whether things are stored as expected.
+  - Replicate tests you've made, by sending requests to the routes for `clear`, `addName` and `viewNames`.
+
+  ![image](assets/5.1.debug.api.client.png)
+
+  - For those curious, the issue above was caused by forgetting to add, commit and push changes made to `submission.ts`.
+  </details>
+
+  <details close>
+
+  <summary> 2. Check the logs </summary>
+
+  - Your project > Deployment > Click on the latest deployment > Log
+  - Instead of having `server.ts` output to a terminal, it gets output here.
+  - Any `console.log` statements in your server or function implementations, will also show here.
+  ![image](assets/5.2.debug-log.png)
+  ![image](assets/5.3.debug-log-console.png)
+
+  </details>
+
+  <details close>
+  <summary> 3. General tips & Additional resources </summary>
+
+  - Use `test.only` in your tests to focus on one test at a time if you are failing them.
+  - Debugging can require running `git push deploy` frequently. Whenever that occurs, it will redeploy your project. Keep in mind that Vercel only allows 100 deployments a day.
+  - If deployment is failing during setup, read the error message by going to Your project > Deployment > Click on the latest deployment > Read the deployment details.
+  - [Vercel Error Codes](https://vercel.com/docs/errors)
+  - [Vercel KV Error Codes](https://vercel.com/docs/storage/vercel-kv/vercel-kv-error-codes)
+  - There is a demo for the lab [here](https://youtu.be/YBMWfwXAfSo) which can help guide you.  
+  </details>
+
+# Submission
+- Use `git` to `add`, `commit`, and `push` your changes on your master branch. This time, you don't use `git push deploy` as that only updates Vercel and Github, not Gitlab. Your GitLab pipeline should also pass.
 - Check that your code has been uploaded to your Gitlab repository on this website (you may need to refresh the page).
+- Check that your zID inside `DEPLOYED_URL` is correct. Typos won't be accepted as grounds for a re-run. 
 
 **If you have pushed your latest changes to master on Gitlab no further action is required! At the due date and time, we automatically collect your work from what's on your master branch on Gitlab.**
 
@@ -263,44 +464,3 @@ Afterwards, assuming you are working on a CSE machine (e.g. via VLAB), we strong
 $ rm -rf node_modules
 ```
 This is because CSE machines only allow each user to have a maximum of 2GB, so you will eventually run out of storage space. It is always possible to `npm install` your packages again!
-
-
-## Additional Information
-
-### Sample package.json
-
-<details>
-
-<summary>Click to view our sample package.json</summary><br/>
-
-**Note**:
-
-1. The main keys to pay attention to are `"scripts"`, `"dependencies"` and `"devDependencies"`.
-1. It is fine if the versions of your packages are newer.
-
-```json
-{
-  "name": "lab03_holidays",
-  "version": "1.0.0",
-  "description": "[TOC]",
-  "type": "module",
-  "main": "holidays.js",
-  "scripts": {
-    "test": "jest"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@babel/preset-env": "^7.17.10",
-    "jest": "^28.1.0"
-  },
-  "dependencies": {
-    "date-fns": "^2.28.0",
-    "date-fns-holiday-us": "^0.2.1",
-    "prompt-sync": "^4.2.0"
-  }
-}
-```
-
-</details>
