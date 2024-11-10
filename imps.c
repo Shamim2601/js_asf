@@ -58,6 +58,8 @@
 
 #define FUNCT_MUL 0x02        // Funct code for MUL
 
+#define FUNCT_SLT 0x2A
+
 
 #define ERROR_BAD_SYSCALL "IMPS error: bad syscall number\n"
 
@@ -431,6 +433,17 @@ void execute_imps(struct imps_file *executable, int trace_mode, char *path) {
             }
             else if (funct == OPCODE_ADDU) {
                 registers[rd] = (uint32_t)registers[rs] + (uint32_t)registers[rt];
+            } else if (funct == FUNCT_SLT) {  // SLT instruction
+                int32_t rs_val = registers[rs];
+                int32_t rt_val = registers[rt];
+
+                // Compare Rs and Rt, and set Rd to 1 if Rs < Rt, else 0
+                if (rs_val < rt_val) {
+                    registers[rd] = 1;
+                } else {
+                    registers[rd] = 0;
+                }
+
             }
              else if (funct == OPCODE_SYSCALL) {  // SYSCALL
 
