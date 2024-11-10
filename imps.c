@@ -46,6 +46,10 @@
 
 #define OPCODE_LUI 0x0F
 
+#define OPCODE_CLO 0x21
+#define OPCODE_CLZ 0x22
+
+
 
 #define ERROR_BAD_SYSCALL "IMPS error: bad syscall number\n"
 
@@ -336,6 +340,23 @@ void read_imps_file(char *path, struct imps_file *executable) {
 }
 
 
+int count_leading_ones(uint32_t value) {
+    int count = 0;
+    for (int i = 31; i >= 0; --i) {
+        if ((value & (1 << i)) == 0) break;
+        count++;
+    }
+    return count;
+}
+
+int count_leading_zeros(uint32_t value) {
+    int count = 0;
+    for (int i = 31; i >= 0; --i) {
+        if ((value & (1 << i)) != 0) break;
+        count++;
+    }
+    return count;
+}
 
 
 
@@ -424,8 +445,11 @@ void execute_imps(struct imps_file *executable, int trace_mode, char *path) {
                     exit(1);
 
                 }
-
-            } else {
+            }else if (funct == OPCODE_CLO) {
+                registers[rd] = count_leading_ones(registers[rs]);
+            } else if (funct == OPCODE_CLZ) {
+                registers[rd] = count_leading_zeros(registers[rs]);
+            }else {
 
                 fprintf(stderr, ERROR_BAD_INSTRUCTION);
 
