@@ -1,218 +1,556 @@
 #include <stdlib.h>
+
 #include <stdint.h>
+
 #include <stdio.h>
+
 #include <inttypes.h>
+
 #include <limits.h>
+
 #include <stdbool.h>
+
 #include <string.h>
 
-// Define register indices for syscall purposes
-#define REG_SYS_CALL 2  // $v0 register for syscall number
-#define REG_ARG 4       // $a0 register for syscall argument
 
-// Define syscall numbers
-#define SYS_CALL_PRINT_INT 1
-#define SYS_CALL_EXIT 10
-#define SYS_CALL_PRINT_CHAR 11
 
-// Instruction opcodes and function codes
+
+
+// Do not rename or modify this struct! It's directly used
+
+// by the subset 1 autotests.
+
+
+
+// defines
+
+#define REG_V0 2
+
+#define REG_A0 4
+
+
+#define SYSCALL_PRINT_INT 1
+
+#define SYSCALL_EXIT 10
+
+#define SYSCALL_PRINT_CHAR 11
+
+
 #define OPCODE_ADDI 0x08
+
 #define OPCODE_SYSCALL 0x0C
-#define FUNC_ADD 0x20
+
+#define OPCODE_ADD 0x20
+
 #define OPCODE_ORI 0x0D
+
 #define OPCODE_LUI 0x0F
 
-// Error messages
-#define ERR_INVALID_SYSCALL "IMPS error: invalid syscall number\n"
-#define ERR_INVALID_INSTRUCTION "IMPS error: invalid instruction "
-#define ERR_EXECUTION_PAST_END "IMPS error: execution past the end of instructions\n"
 
-// Define the structure representing an IMPS file
+#define ERROR_BAD_SYSCALL "IMPS error: bad syscall number\n"
+
+#define ERROR_BAD_INSTRUCTION "IMPS error: bad instruction "
+
+#define ERROR_EXECUTION_PAST_END "IMPS error: execution past the end of instructions\n"
+
+
+
 struct imps_file {
-    uint32_t instruction_count;  // Total number of instructions
-    uint32_t entry_point;        // Starting point for execution
-    uint32_t *instructions;      // Array holding instructions
-    uint32_t *debug_offsets;     // Array holding debug info
-    uint16_t memory_size;        // Size of memory
-    uint8_t *initial_data;       // Initial data for memory
+
+    uint32_t num_instructions;
+
+    uint32_t entry_point;
+
+    uint32_t *instructions;
+
+    uint32_t *debug_offsets;
+
+    uint16_t memory_size;
+
+    uint8_t *initial_data;
+
 };
 
-// Function prototypes
-void load_imps_file(char *path, struct imps_file *executable);
-void run_imps(struct imps_file *executable, int trace_mode, char *path);
-void display_uint32_in_hex(FILE *stream, uint32_t value);
-void display_int32_in_decimal(FILE *stream, int32_t value);
+
+
+void read_imps_file(char *path, struct imps_file *executable);
+
+void execute_imps(struct imps_file *executable, int trace_mode, char *path);
+
+void print_uint32_in_hexadecimal(FILE *stream, uint32_t value);
+
+void print_int32_in_decimal(FILE *stream, int32_t value);
+
+
 
 int main(int argc, char *argv[]) {
-    // Ensure appropriate usage with optional trace mode
-    char *filepath;
+
+
+
+    // Do NOT CHANGE this function
+
+    // put your code in read_imps_file, execute_imps and your own functions
+
+
+
+    char *pathname;
+
     int trace_mode = 0;
 
+
+
     if (argc == 2) {
-        filepath = argv[1];
+
+        pathname = argv[1];
+
     } else if (argc == 3 && strcmp(argv[1], "-t") == 0) {
+
         trace_mode = 1;
-        filepath = argv[2];
+
+        pathname = argv[2];
+
     } else {
+
         fprintf(stderr, "Usage: imps [-t] <executable>\n");
+
         exit(1);
+
     }
+
+
 
     struct imps_file executable = {0};
-    load_imps_file(filepath, &executable);
-    run_imps(&executable, trace_mode, filepath);
 
-    // Free dynamically allocated memory
+    read_imps_file(pathname, &executable);
+
+
+
+    execute_imps(&executable, trace_mode, pathname);
+
+
+
     free(executable.debug_offsets);
+
     free(executable.instructions);
+
     free(executable.initial_data);
 
+
+
     return 0;
+
 }
 
-// Load an IMPS executable file
-void load_imps_file(char *path, struct imps_file *executable) {
+
+
+void read_imps_file(char *path, struct imps_file *executable) {
+
+
     FILE *file = fopen(path, "rb");
+
     if (!file) {
+
         perror(path);  
+
         exit(EXIT_FAILURE);
+
     }
 
-    // Verify magic number "IMPS" (49 4D 50 53)
+
+
+    // Verify magic number
+
     unsigned char magic_number[4];
+
     fread(magic_number, sizeof(unsigned char), 4, file);
+
     if (magic_number[0] != 0x49 || magic_number[1] != 0x4D || magic_number[2] != 0x50 || magic_number[3] != 0x53) {
+
         fclose(file);
+
         fprintf(stderr, "Invalid IMPS file\n");
+
         exit(EXIT_FAILURE);
+
     }
 
-    uint32_t count_inst = 0, start_point = 0;
-    uint16_t mem_size = 0;
-    uint32_t *inst_arr = NULL, *debug_arr = NULL;
-    uint8_t *init_data = NULL;
 
-    // Read instruction count and entry point
-    fread(&count_inst, sizeof(uint32_t), 1, file);
+    // Local temporary storage variables
+
+    uint32_t ins_cnt = 0, start_point = 0;
+
+    uint16_t mem_size = 0;
+
+    uint32_t *instruction = NULL, *debug_marker = NULL;
+
+    uint8_t *data_init = NULL;
+
+
+
+    // Read num_instructions (32-bit)
+
+    fread(&ins_cnt, sizeof(uint32_t), 1, file);
+
+
+
+    // Read entry_point (32-bit)
+
     fread(&start_point, sizeof(uint32_t), 1, file);
 
-    // Allocate memory for instructions and debug information
-    inst_arr = malloc(count_inst * sizeof(uint32_t));
-    debug_arr = malloc(count_inst * sizeof(uint32_t));
-    if (!inst_arr || !debug_arr) {
-        free(inst_arr);
-        free(debug_arr);
+
+
+    // Allocate arrays for instructions and debug_offsets
+
+    instruction = malloc(ins_cnt * sizeof(uint32_t));
+
+    debug_marker = malloc(ins_cnt * sizeof(uint32_t));
+
+    if (!instruction || !debug_marker) {
+
+        free(instruction);
+
+        free(debug_marker);
+
         fclose(file);
+
         exit(EXIT_FAILURE);
+
     }
+
+
 
     // Read instructions
-    for (uint32_t i = 0; i < count_inst; ++i) {
-        fread(&inst_arr[i], sizeof(uint32_t), 1, file);
+
+    for (uint32_t i = 0; i < ins_cnt; ++i) {
+
+        instruction[i] = 0;
+
+        fread(&instruction[i], sizeof(uint32_t), 1, file);
+
     }
 
-    // Read debug offsets
-    for (uint32_t i = 0; i < count_inst; ++i) {
-        fread(&debug_arr[i], sizeof(uint32_t), 1, file);
+
+
+    // Read debug_offsets
+
+    for (uint32_t i = 0; i < ins_cnt; ++i) {
+
+        debug_marker[i] = 0;
+
+        fread(&debug_marker[i], sizeof(uint32_t), 1, file);
+
     }
 
-    // Read memory size and allocate initial data
+
+
+    // Read memory_size (16-bit)
+
     fread(&mem_size, sizeof(uint16_t), 1, file);
-    init_data = malloc(mem_size);
-    if (!init_data) {
-        free(inst_arr);
-        free(debug_arr);
+
+
+
+    // Allocate initial_data
+
+    data_init = malloc(mem_size);
+
+    if (!data_init) {
+
+        free(instruction);
+
+        free(debug_marker);
+
         fclose(file);
+
         exit(EXIT_FAILURE);
+
     }
 
-    fread(init_data, sizeof(uint8_t), mem_size, file);
+
+
+    fread(data_init, sizeof(uint8_t), mem_size, file);
+
+
+
+    // Set values in executable
+
     fclose(file);
 
-    // Populate executable structure fields
-    executable->instruction_count = count_inst;
+    executable->num_instructions = ins_cnt;
+
     executable->entry_point = start_point;
+
     executable->memory_size = mem_size;
-    executable->instructions = inst_arr;
-    executable->debug_offsets = debug_arr;
-    executable->initial_data = init_data;
+
+    executable->instructions = instruction;
+
+    executable->debug_offsets = debug_marker;
+
+    executable->initial_data = data_init;
+
+
+
+
+
+    // Hints:
+
+    // * Open the file with fopen (using path)
+
+    //      * Check that the file succesfully opened
+
+    // * Read in the first 4 bytes (e.g. using fgetc)
+
+    //     checking that they are  0x49, 0x4d, 0x50, 0x53
+
+    // * Read in num_instructions (see last hint)
+
+    // * Read in entry_point  (see last hint)
+
+    //  malloc space for an array of uint32_t's with length num_instructions
+
+    // * Loop num_instructions times, reading in an instruction
+
+    //     and placing the result in your instructions array
+
+    // * Allocate and read in the debug_offsets in the same way as the
+
+    //     instructions
+
+    // * Read in the memory_size (be careful, it's only 2 bytes)
+
+    // * Allocate and read in the initial_data based on memory_size
+
+    // * Close the file
+
+    //
+
+    // * Don't forget to store value in all 6 fields of the executable struct
+
+    //
+
+    // * We recommend you write a function which reads in a single little
+
+    //   endian 32 bit integer from a file. One way to do this is to call fgetc
+
+    //   four times, and then assemble the bytes together using << and |
+
 }
 
-// Execute an IMPS program
-void run_imps(struct imps_file *executable, int trace_mode, char *path) {
-    uint32_t *inst_arr = executable->instructions;
-    uint32_t pc = executable->entry_point;
-    uint32_t inst_count = executable->instruction_count;
-    int32_t regs[32] = {0};  // Initialize 32 registers
-    bool is_running = true;
 
-    while (is_running) {
-        // Ensure the program counter (PC) is within bounds
-        if (pc >= inst_count) {
-            fprintf(stderr, ERR_EXECUTION_PAST_END);
+
+
+
+// Executa an IMPS program
+
+void execute_imps(struct imps_file *executable, int trace_mode, char *path) {
+
+
+
+    // Put your code here
+
+    uint32_t *instructions = executable->instructions;
+
+    uint32_t pc = executable->entry_point;
+
+    uint32_t num_instructions = executable->num_instructions;
+
+    int32_t registers[32] = {0};  // Initialize 32 registers to 0
+
+    bool running = true;
+
+
+
+    while (running) {
+
+        // Check if the PC is out of bounds
+
+        if (pc >= num_instructions) {
+
+            fprintf(stderr, ERROR_EXECUTION_PAST_END);
+
             exit(1);
+
         }
 
-        uint32_t curr_inst = inst_arr[pc++];
-        uint32_t opcode = (curr_inst >> 26) & 0x3F;
+
+
+        // Fetch instruction
+
+        uint32_t instruction = instructions[pc++];
+
+
+
+        // Decode the instruction
+
+        uint32_t opcode = (instruction >> 26) & 0x3F;
+
+
 
         if (opcode == 0x00) {  // R-type instruction
-            uint32_t func_code = curr_inst & 0x3F;
-            if (func_code == FUNC_ADD) {  // ADD instruction
-                uint32_t rs = (curr_inst >> 21) & 0x1F;
-                uint32_t rt = (curr_inst >> 16) & 0x1F;
-                uint32_t rd = (curr_inst >> 11) & 0x1F;
-                regs[rd] = regs[rs] + regs[rt];
-            } else if (func_code == OPCODE_SYSCALL) {  // SYSCALL
-                uint32_t syscall_number = regs[REG_SYS_CALL];
-                if (syscall_number == SYS_CALL_PRINT_INT) {
-                    printf("%d", regs[REG_ARG]);
-                } else if (syscall_number == SYS_CALL_EXIT) {
+
+            uint32_t funct = instruction & 0x3F;
+
+
+
+            if (funct == OPCODE_ADD) {  // ADD instruction
+
+                uint32_t rs = (instruction >> 21) & 0x1F;
+
+                uint32_t rt = (instruction >> 16) & 0x1F;
+
+                uint32_t rd = (instruction >> 11) & 0x1F;
+
+                registers[rd] = registers[rs] + registers[rt];
+
+            } else if (funct == OPCODE_SYSCALL) {  // SYSCALL
+
+                uint32_t syscall_num = registers[REG_V0];
+
+                if (syscall_num == SYSCALL_PRINT_INT) {
+
+                    printf("%d", registers[REG_A0]);
+
+                } else if (syscall_num == SYSCALL_EXIT) {
+
                     exit(0);
-                } else if (syscall_number == SYS_CALL_PRINT_CHAR) {
-                    putchar(regs[REG_ARG] & 0xFF);
+
+                } else if (syscall_num == SYSCALL_PRINT_CHAR) {
+
+                    putchar(registers[REG_A0] & 0xFF);
+
                 } else {
-                    fprintf(stderr, ERR_INVALID_SYSCALL);
+
+                    fprintf(stderr, ERROR_BAD_SYSCALL);
+
                     exit(1);
+
                 }
+
             } else {
-                fprintf(stderr, ERR_INVALID_INSTRUCTION);
-                display_uint32_in_hex(stderr, curr_inst);
+
+                fprintf(stderr, ERROR_BAD_INSTRUCTION);
+
+                fprintf(stderr, "0x%08x\n", instruction);
+
                 exit(1);
+
             }
+
         } else {  // I-type instruction
-            uint32_t rs = (curr_inst >> 21) & 0x1F;
-            uint32_t rt = (curr_inst >> 16) & 0x1F;
-            int32_t imm = (int16_t)(curr_inst & 0xFFFF);  // Sign-extend
+
+            uint32_t rs = (instruction >> 21) & 0x1F;
+
+            uint32_t rt = (instruction >> 16) & 0x1F;
+
+            int32_t imm = (int16_t)(instruction & 0xFFFF);  // Sign-extend immediate
+
+
 
             switch (opcode) {
+
                 case OPCODE_ADDI:
-                    regs[rt] = regs[rs] + imm;
+
+                    registers[rt] = registers[rs] + imm;
+
                     break;
+
                 case OPCODE_ORI:
-                    regs[rt] = regs[rs] | (uint32_t)(imm & 0xFFFF);
+
+                    registers[rt] = registers[rs] | (uint32_t)(imm & 0xFFFF);
+
                     break;
+
                 case OPCODE_LUI:
-                    regs[rt] = (uint32_t)imm << 16;
+
+                    registers[rt] = (uint32_t)imm << 16;
+
                     break;
+
                 default:
-                    fprintf(stderr, ERR_INVALID_INSTRUCTION);
-                    display_uint32_in_hex(stderr, curr_inst);
+
+                    fprintf(stderr, ERROR_BAD_INSTRUCTION);
+
+                    fprintf(stderr, "0x%08x\n", instruction);
+
                     exit(1);
+
             }
+
         }
 
-        // Keep register zero set to zero
-        regs[0] = 0;
+
+
+        // Ensure $zero register remains 0
+
+        registers[0] = 0;
+
     }
+
+
+
+    // Note: you won't need to use the trace_mode or path arguments
+
+    //       until you get to subset 4.
+
 }
 
-// Display a 32-bit integer in hexadecimal
-void display_uint32_in_hex(FILE *stream, uint32_t value) {
+
+
+
+
+//
+
+// Put your functions here
+
+//
+
+// Count leading zeros
+
+
+
+
+
+
+
+// Printing out exact-width integers in a portable way is slightly tricky,
+
+// since we can't assume that a uint32_t is an unsigned int or that a
+
+// int32_t is an int. So we can't just use %x or %d. A solution is to use
+
+// printf format specifiers from the <inttypes.h> header. The following two
+
+// functions are provided for your convenience so that you just call them
+
+// without worring about <inttypes.h>, although you don't have to use use them.
+
+
+
+// Print out a 32 bit integer in hexadecimal, including the leading 0x.
+
+//
+
+// @param stream The file stream to output to.
+
+// @param value The 32 bit integer to output.
+
+void print_uint32_in_hexadecimal(FILE *stream, uint32_t value) {
+
     fprintf(stream, "0x%08" PRIx32, value);
+
 }
 
-// Display a signed 32-bit integer in decimal
-void display_int32_in_decimal(FILE *stream, int32_t value) {
+
+
+// Print out a signed 32 bit integer in decimal.
+
+//
+
+// @param stream The file stream to output to.
+
+// @param value The 32 bit integer to output.
+
+void print_int32_in_decimal(FILE *stream, int32_t value) {
+
     fprintf(stream, "%" PRIi32, value);
+
 }
