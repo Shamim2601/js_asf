@@ -46,9 +46,17 @@
 
 #define OPCODE_LUI 0x0F
 
-#define OPCODE_CLO 0x21
-#define OPCODE_CLZ 0x22
+#define OPCODE_CLO 0x51
 
+#define OPCODE_CLZ 0x50
+
+#define OPCODE_ADDU 0x21
+
+#define OPCODE_ADDIU 0x09
+
+#define OPCODE_SPECIAL2 0x1C  // Opcode for special2 instructions
+
+#define FUNCT_MUL 0x02        // Funct code for MUL
 
 
 #define ERROR_BAD_SYSCALL "IMPS error: bad syscall number\n"
@@ -410,19 +418,21 @@ void execute_imps(struct imps_file *executable, int trace_mode, char *path) {
 
             uint32_t funct = instruction & 0x3F;
 
+            uint32_t rs = (instruction >> 21) & 0x1F;
 
+            uint32_t rt = (instruction >> 16) & 0x1F;
+
+            uint32_t rd = (instruction >> 11) & 0x1F;
 
             if (funct == OPCODE_ADD) {  // ADD instruction
 
-                uint32_t rs = (instruction >> 21) & 0x1F;
-
-                uint32_t rt = (instruction >> 16) & 0x1F;
-
-                uint32_t rd = (instruction >> 11) & 0x1F;
-
                 registers[rd] = registers[rs] + registers[rt];
 
-            } else if (funct == OPCODE_SYSCALL) {  // SYSCALL
+            }
+            else if (funct == OPCODE_ADDU) {
+                registers[rd] = (uint32_t)registers[rs] + (uint32_t)registers[rt];
+            }
+             else if (funct == OPCODE_SYSCALL) {  // SYSCALL
 
                 uint32_t syscall_num = registers[REG_V0];
 
@@ -445,9 +455,13 @@ void execute_imps(struct imps_file *executable, int trace_mode, char *path) {
                     exit(1);
 
                 }
-            }else if (funct == OPCODE_CLO) {
+            }
+            else if (funct == OPCODE_CLO) {
+
                 registers[rd] = count_leading_ones(registers[rs]);
-            } else if (funct == OPCODE_CLZ) {
+            } 
+            else if (funct == OPCODE_CLZ) {
+
                 registers[rd] = count_leading_zeros(registers[rs]);
             }else {
 
@@ -456,10 +470,19 @@ void execute_imps(struct imps_file *executable, int trace_mode, char *path) {
                 fprintf(stderr, "0x%08x\n", instruction);
 
                 exit(1);
-
             }
 
-        } else {  // I-type instruction
+        }else if (opcode == OPCODE_SPECIAL2) {  // special2 opcode
+            uint32_t rs = (instruction >> 21) & 0x1F;
+            uint32_t rt = (instruction >> 16) & 0x1F;
+            uint32_t rd = (instruction >> 11) & 0x1F;
+            uint32_t funct = instruction & 0x3F;
+
+            if (funct == FUNCT_MUL) {  // MUL instruction
+                registers[rd] = registers[rs] * registers[rt];  // Perform the multiplication
+            }
+        }
+         else {  // I-type instruction
 
             uint32_t rs = (instruction >> 21) & 0x1F;
 
@@ -474,6 +497,12 @@ void execute_imps(struct imps_file *executable, int trace_mode, char *path) {
                 case OPCODE_ADDI:
 
                     registers[rt] = registers[rs] + imm;
+
+                    break;
+
+                case OPCODE_ADDIU:
+
+                    registers[rt] = registers[rs] + (uint32_t)imm;
 
                     break;
 
